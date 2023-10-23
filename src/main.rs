@@ -8,12 +8,17 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         r"\d" => input_line.chars().any(|c| c.is_ascii_digit()),
         r"\w" => input_line.chars().any(|c| c.is_ascii_alphanumeric()),
         pat if pat.starts_with('[') && pat.ends_with(']') => {
-            let chars = pat
+            let pat = pat
                 .strip_prefix('[')
                 .expect("`pat` starts with [")
                 .strip_suffix(']')
                 .expect("`pat` ends with ]");
-            input_line.chars().any(|c| chars.contains(c))
+            if pat.starts_with('^') {
+                let pat = pat.strip_prefix('^').expect("`pat` starts with ^");
+                !input_line.chars().any(|c| pat.contains(c))
+            } else {
+                input_line.chars().any(|c| pat.contains(c))
+            }
         }
         _ => panic!("Unhandled pattern: {}", pattern),
     }
