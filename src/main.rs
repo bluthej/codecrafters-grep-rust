@@ -38,3 +38,21 @@ fn main() {
 
     process::exit((!match_pattern(&input_line, &pattern)).into())
 }
+
+#[test]
+fn match_single_character() {
+    assert!(match_pattern("apple", "a"));
+    assert!(!match_pattern("apple", "c"));
+}
+
+#[test]
+fn match_digit() {
+    assert!(match_pattern("apple123", r"\d"));
+    assert!(!match_pattern("apple", r"\d"));
+}
+
+#[test]
+fn match_alphanumeric() {
+    assert!(match_pattern("foo101", r"\w"));
+    assert!(!match_pattern("$!?", r"\w"));
+}
