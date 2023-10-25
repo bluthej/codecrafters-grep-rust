@@ -41,18 +41,35 @@ fn main() {
 
 #[test]
 fn match_single_character() {
-    assert!(match_pattern("apple", "a"));
-    assert!(!match_pattern("apple", "c"));
+    let pattern = "a";
+    assert!(match_pattern("apple", pattern));
+    assert!(!match_pattern("dog", pattern));
 }
 
 #[test]
 fn match_digit() {
-    assert!(match_pattern("apple123", r"\d"));
-    assert!(!match_pattern("apple", r"\d"));
+    let pattern = r"\d";
+    assert!(match_pattern("apple123", pattern));
+    assert!(!match_pattern("apple", pattern));
 }
 
 #[test]
 fn match_alphanumeric() {
-    assert!(match_pattern("foo101", r"\w"));
-    assert!(!match_pattern("$!?", r"\w"));
+    let pattern = r"\w";
+    assert!(match_pattern("foo101", pattern));
+    assert!(!match_pattern("$!?", pattern));
+}
+
+#[test]
+fn match_character_group() {
+    let pattern = "[abc]";
+    assert!(match_pattern("apple", pattern));
+    assert!(!match_pattern("dog", pattern));
+}
+
+#[test]
+fn match_negative_character_group() {
+    let pattern = "[^abc]";
+    assert!(match_pattern("dog", pattern));
+    assert!(!match_pattern("cab", pattern));
 }
