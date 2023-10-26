@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use core::panic;
 use std::env;
 use std::io;
@@ -89,7 +91,7 @@ fn main() {
 
     io::stdin().read_line(&mut input_line).unwrap();
 
-    process::exit((!match_simple_pattern(&input_line, &pattern)).into())
+    process::exit((!match_pattern(&input_line, &pattern)).into())
 }
 
 #[test]
@@ -144,4 +146,11 @@ fn match_complex_pattern() {
     let pattern = r"a[bcd]\d[^xyz]\w";
     assert!(match_pattern("For example, ac0fl is a match", pattern));
     assert!(!match_pattern("This sentence has no match", pattern));
+}
+
+#[test]
+fn match_pattern_with_space() {
+    let pattern = r"\d apple";
+    assert!(match_pattern("sally has 3 apples", pattern));
+    // assert!(!match_pattern("12 apples", pattern));
 }
