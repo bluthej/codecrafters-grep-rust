@@ -144,4 +144,7 @@ fn match_combine_character_classes() {
     assert!(!match_pattern("sally has 1 orange", r"\d apple"));
     assert!(match_pattern("sally has 124 apples", r"\d\d\d apples"));
     assert!(!match_pattern("sally has 12 apples", r"\d\\d\\d apples"));
+    assert!(match_pattern("sally has 3 dogs", r"\d \w\w\ws"));
+    assert!(match_pattern("sally has 4 dogs", r"\d \w\w\ws"));
+    assert!(!match_pattern("sally has 1 dog", r"\d \w\w\ws"));
 }
