@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use core::panic;
 use std::env;
 use std::io;
@@ -34,7 +32,10 @@ fn next_pattern(pattern: &str) -> Option<&str> {
     let mut chars = pattern.char_indices();
     match chars.next() {
         Some((_, '\\')) => {
-            if matches!(chars.next(), Some((_, 'd')) | Some((_, 'w'))) {
+            if matches!(
+                chars.next(),
+                Some((_, 'd')) | Some((_, 'w')) | Some((_, '\\'))
+            ) {
                 Some(&pattern[..2])
             } else {
                 panic!("Unhandled pattern: {}", pattern)
@@ -59,6 +60,7 @@ fn match_simple_pattern(input_line: &str, pattern: &str) -> bool {
         .next()
         .map(|c| match pattern {
             pat if pat.chars().count() == 1 => pat.starts_with(c),
+            r"\\" => c == '\\',
             r"\d" => c.is_ascii_digit(),
             r"\w" => c.is_ascii_alphanumeric(),
             pat if pat.starts_with('[') && pat.ends_with(']') => {
@@ -96,37 +98,32 @@ fn main() {
 
 #[test]
 fn match_single_character() {
-    let pattern = "a";
-    assert!(match_pattern("apple", pattern));
-    assert!(!match_pattern("dog", pattern));
+    assert!(match_pattern("dog", "d"));
+    assert!(!match_pattern("dog", "f"));
 }
 
 #[test]
 fn match_digit() {
-    let pattern = r"\d";
-    assert!(match_pattern("apple123", pattern));
-    assert!(!match_pattern("apple", pattern));
+    assert!(match_pattern("123", r"\d"));
+    assert!(!match_pattern("apple", r"\d"));
 }
 
 #[test]
 fn match_alphanumeric() {
-    let pattern = r"\w";
-    assert!(match_pattern("foo101", pattern));
-    assert!(!match_pattern("$!?", pattern));
+    assert!(match_pattern("word", r"\w"));
+    assert!(!match_pattern("$!?", r"\w"));
 }
 
 #[test]
 fn match_character_group() {
-    let pattern = "[abc]";
-    assert!(match_pattern("apple", pattern));
-    assert!(!match_pattern("dog", pattern));
+    assert!(match_pattern("a", "[abcd]"));
+    assert!(!match_pattern("efgh", "[abcd]"));
 }
 
 #[test]
 fn match_negative_character_group() {
-    let pattern = "[^abc]";
-    assert!(match_pattern("dog", pattern));
-    assert!(!match_pattern("cab", pattern));
+    assert!(match_pattern("apple", "[^xyz]"));
+    assert!(!match_pattern("banana", "[^anb]"));
 }
 
 #[test]
@@ -142,15 +139,9 @@ fn match_empty_input() {
 }
 
 #[test]
-fn match_complex_pattern() {
-    let pattern = r"a[bcd]\d[^xyz]\w";
-    assert!(match_pattern("For example, ac0fl is a match", pattern));
-    assert!(!match_pattern("This sentence has no match", pattern));
-}
-
-#[test]
-fn match_pattern_with_space() {
-    let pattern = r"\d apple";
-    assert!(match_pattern("sally has 3 apples", pattern));
-    // assert!(!match_pattern("12 apples", pattern));
+fn match_combine_character_classes() {
+    assert!(match_pattern("sally has 3 apples", r"\d apple"));
+    assert!(!match_pattern("sally has 1 orange", r"\d apple"));
+    assert!(match_pattern("sally has 124 apples", r"\d\d\d apples"));
+    assert!(!match_pattern("sally has 12 apples", r"\d\\d\\d apples"));
 }
