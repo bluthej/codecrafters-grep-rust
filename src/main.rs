@@ -5,6 +5,9 @@ use std::process;
 
 fn match_pattern(input_line: &str, pattern: &str) -> bool {
     let mut i = 0;
+    if let Some(pattern) = pattern.strip_prefix('^') {
+        return match_here(input_line, pattern);
+    }
     while i <= input_line.len() {
         if match_here(&input_line[i..], pattern) {
             return true;
@@ -151,5 +154,11 @@ mod tests {
         assert!(match_pattern("sally has 3 dogs", r"\d \w\w\ws"));
         assert!(match_pattern("sally has 4 dogs", r"\d \w\w\ws"));
         assert!(!match_pattern("sally has 1 dog", r"\d \w\w\ws"));
+    }
+
+    #[test]
+    fn match_start_of_string_anchor() {
+        assert!(match_pattern("log", "^log"));
+        assert!(!match_pattern("slog", "^log"));
     }
 }
