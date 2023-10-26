@@ -96,55 +96,60 @@ fn main() {
     process::exit((!match_pattern(&input_line, &pattern)).into())
 }
 
-#[test]
-fn match_single_character() {
-    assert!(match_pattern("dog", "d"));
-    assert!(!match_pattern("dog", "f"));
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn match_digit() {
-    assert!(match_pattern("123", r"\d"));
-    assert!(!match_pattern("apple", r"\d"));
-}
+    #[test]
+    fn match_single_character() {
+        assert!(match_pattern("dog", "d"));
+        assert!(!match_pattern("dog", "f"));
+    }
 
-#[test]
-fn match_alphanumeric() {
-    assert!(match_pattern("word", r"\w"));
-    assert!(!match_pattern("$!?", r"\w"));
-}
+    #[test]
+    fn match_digit() {
+        assert!(match_pattern("123", r"\d"));
+        assert!(!match_pattern("apple", r"\d"));
+    }
 
-#[test]
-fn match_character_group() {
-    assert!(match_pattern("a", "[abcd]"));
-    assert!(!match_pattern("efgh", "[abcd]"));
-}
+    #[test]
+    fn match_alphanumeric() {
+        assert!(match_pattern("word", r"\w"));
+        assert!(!match_pattern("$!?", r"\w"));
+    }
 
-#[test]
-fn match_negative_character_group() {
-    assert!(match_pattern("apple", "[^xyz]"));
-    assert!(!match_pattern("banana", "[^anb]"));
-}
+    #[test]
+    fn match_character_group() {
+        assert!(match_pattern("a", "[abcd]"));
+        assert!(!match_pattern("efgh", "[abcd]"));
+    }
 
-#[test]
-fn match_empty_pattern() {
-    let pattern = "";
-    assert!(match_pattern("dog", pattern));
-}
+    #[test]
+    fn match_negative_character_group() {
+        assert!(match_pattern("apple", "[^xyz]"));
+        assert!(!match_pattern("banana", "[^anb]"));
+    }
 
-#[test]
-fn match_empty_input() {
-    let pattern = "a";
-    assert!(!match_pattern("", pattern));
-}
+    #[test]
+    fn match_empty_pattern() {
+        let pattern = "";
+        assert!(match_pattern("dog", pattern));
+    }
 
-#[test]
-fn match_combine_character_classes() {
-    assert!(match_pattern("sally has 3 apples", r"\d apple"));
-    assert!(!match_pattern("sally has 1 orange", r"\d apple"));
-    assert!(match_pattern("sally has 124 apples", r"\d\d\d apples"));
-    assert!(!match_pattern("sally has 12 apples", r"\d\\d\\d apples"));
-    assert!(match_pattern("sally has 3 dogs", r"\d \w\w\ws"));
-    assert!(match_pattern("sally has 4 dogs", r"\d \w\w\ws"));
-    assert!(!match_pattern("sally has 1 dog", r"\d \w\w\ws"));
+    #[test]
+    fn match_empty_input() {
+        let pattern = "a";
+        assert!(!match_pattern("", pattern));
+    }
+
+    #[test]
+    fn match_combine_character_classes() {
+        assert!(match_pattern("sally has 3 apples", r"\d apple"));
+        assert!(!match_pattern("sally has 1 orange", r"\d apple"));
+        assert!(match_pattern("sally has 124 apples", r"\d\d\d apples"));
+        assert!(!match_pattern("sally has 12 apples", r"\d\\d\\d apples"));
+        assert!(match_pattern("sally has 3 dogs", r"\d \w\w\ws"));
+        assert!(match_pattern("sally has 4 dogs", r"\d \w\w\ws"));
+        assert!(!match_pattern("sally has 1 dog", r"\d \w\w\ws"));
+    }
 }
