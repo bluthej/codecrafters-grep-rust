@@ -24,6 +24,13 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
     if let Some(rest) = pattern[pat.len()..].strip_prefix('*') {
         return match_star(input_line, pat, rest);
     }
+    if let Some(rest) = pattern[pat.len()..].strip_prefix('+') {
+        let Some(c) = input_line.chars().next() else {
+            return false;
+        };
+        let n = c.len_utf8();
+        return match_simple_pattern(input_line, pat) && match_star(&input_line[n..], pat, rest);
+    }
     let Some(c) = input_line.chars().next() else {
         return pat == "$";
     };
@@ -192,5 +199,13 @@ mod tests {
         assert!(match_pattern("apple", "ap*le"));
         assert!(match_pattern("apppppple", "ap*le"));
         assert!(!match_pattern("apple", "ap*la"));
+    }
+
+    #[test]
+    fn match_plus() {
+        assert!(match_pattern("aple", "ap+le"));
+        assert!(match_pattern("apple", "ap+le"));
+        assert!(match_pattern("apppppple", "ap+le"));
+        assert!(!match_pattern("ale", "ap+le"));
     }
 }
