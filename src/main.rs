@@ -45,6 +45,18 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
     let Some(c) = input_line.chars().next() else {
         return pat == "$";
     };
+    if pat.starts_with('(') {
+        let (Some(bar), Some(rparen)) = (pattern.find('|'), pattern.find(')')) else {
+            panic!("Unterminated alternation")
+        };
+        if match_here(input_line, &pattern[1..bar]) {
+            return match_here(&input_line[bar - 1..], &pattern[rparen + 1..]);
+        } else if match_here(input_line, &pattern[bar + 1..rparen]) {
+            return match_here(&input_line[rparen - bar - 1..], &pattern[rparen + 1..]);
+        } else {
+            return false;
+        }
+    }
     if match_simple_pattern(input_line, pat) {
         match_here(&input_line[c.len_utf8()..], &pattern[pat.len()..])
     } else {
@@ -72,6 +84,12 @@ fn next_pattern(pattern: &str) -> Option<&str> {
                 }
             }
             panic!("Unterminated character group");
+        }
+        Some((_, '(')) => {
+            let (Some(_), Some(rparen)) = (pattern.find('|'), pattern.find(')')) else {
+                panic!("Unterminated alternation")
+            };
+            Some(&pattern[..rparen + 1])
         }
         Some(_) => Some(&pattern[..1]),
         None => None,
@@ -234,5 +252,12 @@ mod tests {
     fn match_dot() {
         assert!(match_pattern("dog", "d.g"));
         assert!(!match_pattern("cog", "d.g"));
+    }
+
+    #[test]
+    fn match_alternation() {
+        assert!(match_pattern("cat", "(cat|dog)"));
+        assert!(match_pattern("dog", "(cat|dog)"));
+        assert!(!match_pattern("apple", "(cat|dog)"));
     }
 }
