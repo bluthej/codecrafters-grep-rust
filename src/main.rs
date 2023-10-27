@@ -94,7 +94,7 @@ fn match_simple_pattern(input_line: &str, pattern: &str) -> bool {
         .chars()
         .next()
         .map(|c| match pattern {
-            pat if pat.chars().count() == 1 => pat.starts_with(c),
+            pat if pat.chars().count() == 1 => pat.starts_with(c) | pat.starts_with('.'),
             r"\\" => c == '\\',
             r"\d" => c.is_ascii_digit(),
             r"\w" => c.is_ascii_alphanumeric(),
@@ -225,5 +225,11 @@ mod tests {
         assert!(match_pattern("apple", "app?le"));
         assert!(!match_pattern("cat", "dogs?"));
         assert!(!match_pattern("apple", "apx?le"));
+    }
+
+    #[test]
+    fn match_dot() {
+        assert!(match_pattern("dog", "d.g"));
+        assert!(!match_pattern("cog", "d.g"));
     }
 }
