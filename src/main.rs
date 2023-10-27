@@ -21,6 +21,9 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
     let Some(pat) = next_pattern(pattern) else {
         return true;
     };
+    if let Some(rest) = pattern[pat.len()..].strip_prefix('*') {
+        return match_star(input_line, pat, rest);
+    }
     let Some(c) = input_line.chars().next() else {
         return pat == "$";
     };
@@ -55,6 +58,20 @@ fn next_pattern(pattern: &str) -> Option<&str> {
         Some(_) => Some(&pattern[..1]),
         None => None,
     }
+}
+
+fn match_star(input_line: &str, pattern: &str, rest: &str) -> bool {
+    let mut i = 0;
+    while i <= input_line.len() {
+        if match_here(&input_line[i..], rest) {
+            return true;
+        }
+        if !match_simple_pattern(&input_line[i..], pattern) {
+            break;
+        }
+        i += input_line.chars().next().map(char::len_utf8).unwrap_or(1);
+    }
+    false
 }
 
 fn match_simple_pattern(input_line: &str, pattern: &str) -> bool {
@@ -166,5 +183,14 @@ mod tests {
     fn match_end_of_string_anchor() {
         assert!(match_pattern("dog", "dog$"));
         assert!(!match_pattern("dogs", "dog$"));
+    }
+
+    #[test]
+    fn match_star() {
+        assert!(match_pattern("ale", "ap*le"));
+        assert!(match_pattern("aple", "ap*le"));
+        assert!(match_pattern("apple", "ap*le"));
+        assert!(match_pattern("apppppple", "ap*le"));
+        assert!(!match_pattern("apple", "ap*la"));
     }
 }
