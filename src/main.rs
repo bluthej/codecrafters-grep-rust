@@ -31,6 +31,14 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
         let n = c.len_utf8();
         return match_simple_pattern(input_line, pat) && match_star(&input_line[n..], pat, rest);
     }
+    if let Some(rest) = pattern[pat.len()..].strip_prefix('?') {
+        let Some(c) = input_line.chars().next() else {
+            return true;
+        };
+        let n = c.len_utf8();
+        return (match_simple_pattern(input_line, pat) && match_here(&input_line[n..], rest))
+            || match_here(input_line, rest);
+    }
     let Some(c) = input_line.chars().next() else {
         return pat == "$";
     };
@@ -207,5 +215,15 @@ mod tests {
         assert!(match_pattern("apple", "ap+le"));
         assert!(match_pattern("apppppple", "ap+le"));
         assert!(!match_pattern("ale", "ap+le"));
+    }
+
+    #[test]
+    fn match_question_mark() {
+        assert!(match_pattern("dog", "dogs?"));
+        assert!(match_pattern("dogs", "dogs?"));
+        assert!(match_pattern("aple", "app?le"));
+        assert!(match_pattern("apple", "app?le"));
+        assert!(!match_pattern("cat", "dogs?"));
+        assert!(!match_pattern("apple", "apx?le"));
     }
 }
