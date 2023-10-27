@@ -21,23 +21,26 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
     let Some(pat) = next_pattern(pattern) else {
         return true;
     };
-    if let Some(rest) = pattern[pat.len()..].strip_prefix('*') {
-        return match_star(input_line, pat, rest);
-    }
-    if let Some(rest) = pattern[pat.len()..].strip_prefix('+') {
-        let Some(c) = input_line.chars().next() else {
-            return false;
-        };
-        let n = c.len_utf8();
-        return match_simple_pattern(input_line, pat) && match_star(&input_line[n..], pat, rest);
-    }
-    if let Some(rest) = pattern[pat.len()..].strip_prefix('?') {
-        let Some(c) = input_line.chars().next() else {
-            return true;
-        };
-        let n = c.len_utf8();
-        return (match_simple_pattern(input_line, pat) && match_here(&input_line[n..], rest))
-            || match_here(input_line, rest);
+    match pattern[pat.len()..].chars().next() {
+        Some('*') => return match_star(input_line, pat, &pattern[pat.len() + 1..]),
+        Some('+') => {
+            let Some(c) = input_line.chars().next() else {
+                return false;
+            };
+            let n = c.len_utf8();
+            return match_simple_pattern(input_line, pat)
+                && match_star(&input_line[n..], pat, &pattern[pat.len() + 1..]);
+        }
+        Some('?') => {
+            let Some(c) = input_line.chars().next() else {
+                return true;
+            };
+            let n = c.len_utf8();
+            return (match_simple_pattern(input_line, pat)
+                && match_here(&input_line[n..], &pattern[pat.len() + 1..]))
+                || match_here(input_line, &pattern[pat.len() + 1..]);
+        }
+        _ => {}
     }
     let Some(c) = input_line.chars().next() else {
         return pat == "$";
