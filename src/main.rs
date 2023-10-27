@@ -251,6 +251,7 @@ mod tests {
     #[test]
     fn match_dot() {
         assert!(match_pattern("dog", "d.g"));
+        assert!(match_pattern("dig", "d.g"));
         assert!(!match_pattern("cog", "d.g"));
     }
 
