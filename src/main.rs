@@ -22,7 +22,7 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
         return true;
     };
     let Some(c) = input_line.chars().next() else {
-        return false;
+        return pat == "$";
     };
     if match_simple_pattern(input_line, pat) {
         match_here(&input_line[c.len_utf8()..], &pattern[pat.len()..])
@@ -160,5 +160,11 @@ mod tests {
     fn match_start_of_string_anchor() {
         assert!(match_pattern("log", "^log"));
         assert!(!match_pattern("slog", "^log"));
+    }
+
+    #[test]
+    fn match_end_of_string_anchor() {
+        assert!(match_pattern("dog", "dog$"));
+        assert!(!match_pattern("dogs", "dog$"));
     }
 }
