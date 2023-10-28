@@ -32,12 +32,10 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
                 && match_star(&input_line[n..], pat, &pattern[pat.len() + 1..]);
         }
         Some('?') => {
-            let Some(c) = input_line.chars().next() else {
-                return true;
-            };
-            let n = c.len_utf8();
-            return (match_simple_pattern(input_line, pat)
-                && match_here(&input_line[n..], &pattern[pat.len() + 1..]))
+            if input_line.is_empty() {
+                return pattern[pat.len() + 1..].is_empty();
+            }
+            return match_here(input_line, &[&pat, &pattern[pat.len() + 1..]].concat())
                 || match_here(input_line, &pattern[pat.len() + 1..]);
         }
         _ => {}
@@ -49,13 +47,13 @@ fn match_here(input_line: &str, pattern: &str) -> bool {
         let (Some(bar), Some(rparen)) = (pattern.find('|'), pattern.find(')')) else {
             panic!("Unterminated alternation")
         };
-        if match_here(input_line, &pattern[1..bar]) {
-            return match_here(&input_line[bar - 1..], &pattern[rparen + 1..]);
-        } else if match_here(input_line, &pattern[bar + 1..rparen]) {
-            return match_here(&input_line[rparen - bar - 1..], &pattern[rparen + 1..]);
-        } else {
-            return false;
-        }
+        return match_here(
+            input_line,
+            &[&pattern[1..bar], &pattern[rparen + 1..]].concat(),
+        ) || match_here(
+            input_line,
+            &[&pattern[bar + 1..rparen], &pattern[rparen + 1..]].concat(),
+        );
     }
     if match_simple_pattern(input_line, pat) {
         match_here(&input_line[c.len_utf8()..], &pattern[pat.len()..])
@@ -260,5 +258,33 @@ mod tests {
         assert!(match_pattern("cat", "(cat|dog)"));
         assert!(match_pattern("dog", "(cat|dog)"));
         assert!(!match_pattern("apple", "(cat|dog)"));
+    }
+
+    #[test]
+    fn match_alternation_with_variable_length_match() {
+        assert!(match_pattern(
+            "the cat is eating",
+            "the (ca+t|dog) is eating"
+        ));
+        assert!(match_pattern(
+            "the caaaaaaaat is eating",
+            "the (ca+t|dog) is eating"
+        ));
+        assert!(match_pattern(
+            "the dog is eating",
+            "the (ca+t|dog) is eating"
+        ));
+        assert!(!match_pattern(
+            "the bird is eating",
+            "the (ca+t|dog) is eating"
+        ));
+    }
+
+    #[test]
+    fn match_question_mark_after_alternation() {
+        assert!(match_pattern("", "(cat|bird)?"));
+        assert!(match_pattern("cat", "(cat|bird)?"));
+        assert!(match_pattern("bird", "(cat|bird)?"));
+        assert!(match_pattern("catdog", "(cat|bird)?dog"));
     }
 }
